@@ -7,11 +7,11 @@
         {% if error_string %}
             <h3>ERROR: {{error_string}}</h3>
         {% endif %}    
-        <form method="POST"> 
+        <form action="/" method="POST"> 
         How many players? <br>
-        <input id="num_players" placeholder="Number of players (ex. 5)" /> <br>
+        <input name="num_players" id="num_players" placeholder="Number of players (ex. 5)" /> <br>
         Ethan eyes? <br>
-        <input type="checkbox" id="ethan_eyes_chk" /><br>
+        <input name="ethan_eyes_chk" type="checkbox" id="ethan_eyes_chk" /><br>
         <input type="submit" value="Play Ethan!" />
         {% csrf_token %}
         </form>
