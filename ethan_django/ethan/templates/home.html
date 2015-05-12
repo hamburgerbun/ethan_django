@@ -4,13 +4,16 @@
     </head>
     <body>
         <h1>WELCOME TO ETHAN YAY ETHAN ALLENNNNNN</h1>
-            <form method="POST"> 
-            How many players? <br>
-            <input id="num_players" placeholder="5" /> <br>
-            Ethan eyes? <br>
-            <input type="checkbox" id="ethan_eyes_chk" /><br>
-            <input type="submit" value="Play Ethan!" />
-            {% csrf_token %}
+        {% if error_string %}
+            <h3>ERROR: {{error_string}}</h3>
+        {% endif %}    
+        <form method="POST"> 
+        How many players? <br>
+        <input id="num_players" placeholder="Number of players (ex. 5)" /> <br>
+        Ethan eyes? <br>
+        <input type="checkbox" id="ethan_eyes_chk" /><br>
+        <input type="submit" value="Play Ethan!" />
+        {% csrf_token %}
         </form>
     </body>
 </html>
