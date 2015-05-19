@@ -39,6 +39,7 @@ def _start_ethan(ret_dict):
     return HttpResponseRedirect('/game/%s' % (game_uuid))
 
 def _create_game(ret_dict):
+    '''creates game object'''
     game_obj = Game(game_id = uuid4().hex, \
                     scores = ','.join(['5'] * ret_dict['player_count']), \
                     turn_number = 1, \
@@ -51,6 +52,7 @@ def _create_game(ret_dict):
     return game_obj.game_id
 
 def _create_players(ret_dict, game_id):
+    '''creates player objects'''
     for ind in range(ret_dict['player_count']):
         player = Player(game_id = game_id, \
                         player_num = ind, \
@@ -70,6 +72,7 @@ def _do_a_turn(game_id, request):
     pass
 
 def _form_render_context(game_id):
+    '''forms dict for use in rendering game page'''
     render_context = dict()
     game = Game.objects.filter(game_id = game_id)[0]
     render_context['game_id'] = game_id
@@ -77,7 +80,25 @@ def _form_render_context(game_id):
     render_context['ethan_count'] = 5*len(scores) - sum(scores)
     render_context['die1'] = game.die1
     render_context['die2'] = game.die2
-    #TODO: render players
-    #TODO: render turns
-    #TODO: render win/lose message if needed  
+    
+    players = Player.objects.filter(game_id = game_id)
+    players = sorted(players, key=lambda player: player.player_num)
+    player_dict_list = list()
+    for player in players:
+        player_dict = dict()
+        player_dict['name'] = player.player_name
+        player_dict['num'] = player.player_num
+        player_dict_list.append(player_dict)
+    render_context['players'] = player_dict_list
+    
+    turns = Turn.objects.filter(game_id = game_id)
+    turns = sorted(turns, key=lambda turn: turn.turn_num, reverse=True)
+    render_context['turns'] = [i.turn_str for i in turns]
+
+    if game.win_lose_ind < 0:
+        render_context['end_msg'] = 'EVERYBODY LOSES. AE2015.'
+    elif game.win_lose_ind > 0:
+        winner_name = players[game.win_lose_ind].player_name
+        render_context['end_msg'] = 'HOORAY %s WON, ETHAN LOSES.' % (winner_name)
     return render_context
+
