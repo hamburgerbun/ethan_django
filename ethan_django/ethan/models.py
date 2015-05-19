@@ -7,6 +7,8 @@ class Game(models.Model):
     turn_number = models.IntegerField() # number of turn that'll happen next
     win_lose_ind = models.IntegerField() #0 nothing, -1 ethan wins, else player num win
     last_updated = models.DateTimeField() #date of last access
+    die1 = models.IntegerField()
+    die2 = models.IntegerField()
     created = models.DateTimeField() #date created
 
 class Player(models.Model):

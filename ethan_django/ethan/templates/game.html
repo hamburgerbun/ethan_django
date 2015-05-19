@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <title>Ethan in Django: game ID {{game_id}}</title>
+    </head>
+    <body>
+        <h1>ETHAN: {{ethan_count}} chips</h1>
+        <p>
+        <h1>DICE: [{{die1}}] [{{die2}}]</h1>
+        <p>
+        <h2>players will go here</h2>
+        <p> 
+        <form method="POST"> 
+            <input type="submit" value="Roll the dice!" />
+            {% csrf_token %}
+        </form>
+        <p>
+        history of turns will go here<br>
+    </body>
+</html>

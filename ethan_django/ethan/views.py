@@ -19,7 +19,6 @@ def home_page(request):
 def _validate_options(post_dict):
     '''validates options for game creation'''
     ret_dict = dict()
-    pprint(post_dict)
     if 'ethan_eyes_chk' in post_dict:
         ret_dict['ethan_eyes'] = 1
     try:
@@ -45,6 +44,8 @@ def _create_game(ret_dict):
                     turn_number = 1, \
                     win_lose_ind = 0, \
                     last_updated = datetime.now(), \
+                    die1 = 2, \
+                    die2 = 2, \
                     created = datetime.now())
     game_obj.save()
     return game_obj.game_id
@@ -59,20 +60,24 @@ def _create_players(ret_dict, game_id):
 
 def game_page(request):
     '''deals with the game pages after creation'''
-    ret_dict = dict()
+    game_id = request.path_info.split('/')[-1]
     if request.method == 'POST':
-        # increment turn
-        ret_dict = _do_a_turn()
-    render_context = _form_render_context(ret_dict)
+        _do_a_turn(game_id, request)
+    render_context = _form_render_context(game_id)
     return render(request, 'game.html', render_context) 
 
-def _do_a_turn():
+def _do_a_turn(game_id, request):
     pass
 
-def _form_render_context(ret_dict):
+def _form_render_context(game_id):
     render_context = dict()
-    render_context['game_id'] = 'abcd'
-    render_context['ethan_count'] = 5
-    render_context['die1'] = 2
-    render_context['die2'] = 2
+    game = Game.objects.filter(game_id = game_id)[0]
+    render_context['game_id'] = game_id
+    scores = [int(i) for i in game.scores.split(',')]
+    render_context['ethan_count'] = 5*len(scores) - sum(scores)
+    render_context['die1'] = game.die1
+    render_context['die2'] = game.die2
+    #TODO: render players
+    #TODO: render turns
+    #TODO: render win/lose message if needed  
     return render_context
