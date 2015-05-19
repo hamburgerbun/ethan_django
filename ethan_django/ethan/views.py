@@ -1,6 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from ethan.models import Game, Player, Turn
 from pprint import pprint
+from uuid import uuid4
+from datetime import datetime
 
 def home_page(request):
     '''deals with the main page'''
@@ -31,8 +34,28 @@ def _validate_options(post_dict):
 def _start_ethan(ret_dict):
     '''initializes the game internals before redirecting to game page'''
     # make use of model and create game internals
+    game_uuid = _create_game(ret_dict)
+    _create_players(ret_dict, game_uuid) 
     # redirect to page
-    return HttpResponseRedirect('/game/abcd')
+    return HttpResponseRedirect('/game/%s' % (game_uuid))
+
+def _create_game(ret_dict):
+    game_obj = Game(game_id = uuid4().hex, \
+                    scores = ','.join(['5'] * ret_dict['player_count']), \
+                    turn_number = 1, \
+                    win_lose_ind = 0, \
+                    last_updated = datetime.now(), \
+                    created = datetime.now())
+    game_obj.save()
+    return game_obj.game_id
+
+def _create_players(ret_dict, game_id):
+    for ind in range(ret_dict['player_count']):
+        player = Player(game_id = game_id, \
+                        player_num = ind, \
+                        player_name = '')
+        player.save()
+    return
 
 def game_page(request):
     '''deals with the game pages after creation'''
