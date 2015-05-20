@@ -4,6 +4,7 @@ from ethan.models import Game, Player, Turn
 from pprint import pprint
 from uuid import uuid4
 from datetime import datetime
+from random import randint
 
 def home_page(request):
     '''deals with the main page'''
@@ -40,9 +41,14 @@ def _start_ethan(ret_dict):
 
 def _create_game(ret_dict):
     '''creates game object'''
+    ethan_eyes = 0
+    if 'ethan_eyes' in ret_dict:
+        ethan_eyes = 1
     game_obj = Game(game_id = uuid4().hex, \
                     scores = ','.join(['5'] * ret_dict['player_count']), \
                     turn_number = 1, \
+                    player_turn = 0, \
+                    ethan_eyes = ethan_eyes, \
                     win_lose_ind = 0, \
                     last_updated = datetime.now(), \
                     die1 = 2, \
@@ -69,7 +75,49 @@ def game_page(request):
     return render(request, 'game.html', render_context) 
 
 def _do_a_turn(game_id, request):
-    pass
+    game = Game.objects.filter(game_id = game_id)[0]
+    players = Player.objects.filter(game_id = game_id)
+    for player in players:
+        player.player_name = request.POST['player%d' % getattr(player,'player_num')]
+        player.save()
+        if player.player_num == game.player_turn:
+            player_name = player.player_name
+            if player_name.isspace():
+                player_name = 'player%d' % player.player_num
+    game.die1 = randint(1,6)
+    game.die2 = randint(1,6)
+    total = game.die1 + game.die2
+    new_turn = Turn(game_id = game_id, \
+                    turn_num = game.turn_number, \
+                    turn_str = '')
+    turn_str = '%s rolled a %d ,' % (player_name, total)
+    scores = [int(i) for i in game.scores.split(',')]
+    if total == 4:
+        ethan = 5*len(players) - sum(scores)
+        scores[game.player_turn] = scores[game.player_turn] + ethan
+        turn_str = '%s robs Ethan of %d chips.' % (turn_str, ethan)
+    elif total == 2 and game.ethan_eyes:
+        scores[game.player_turn] = 0
+        turn_str = '%s gets Ethan Eyes and loses all chips.' % (turn_str)
+    else:
+        scores[game.player_turn] = scores[game.player_turn] - 1
+        turn_str = '%s loses 1 chip.' % (turn_str)
+    ethan = 5*len(players) - sum(scores)
+    if sum(scores) == 0:
+        game.win_lose_ind = -1
+    elif scores[game.player_turn] > ethan and scores[game.player_turn] == sum(scores):
+        game.win_lose_ind = game.player_turn
+    else:
+        while(True):
+            game.player_turn = (game.player_turn + 1) % len(players)
+            if scores[game.player_turn]:
+                break
+    game.scores = ','.join([str(i) for i in scores])
+    game.turn_number = game.turn_number + 1
+    game.save()
+    new_turn.turn_str = turn_str
+    new_turn.save()
+    return
 
 def _form_render_context(game_id):
     '''forms dict for use in rendering game page'''
@@ -80,7 +128,7 @@ def _form_render_context(game_id):
     render_context['ethan_count'] = 5*len(scores) - sum(scores)
     render_context['die1'] = game.die1
     render_context['die2'] = game.die2
-    
+    render_context['player_turn'] = game.player_turn    
     players = Player.objects.filter(game_id = game_id)
     players = sorted(players, key=lambda player: player.player_num)
     player_dict_list = list()
@@ -88,6 +136,7 @@ def _form_render_context(game_id):
         player_dict = dict()
         player_dict['name'] = player.player_name
         player_dict['num'] = player.player_num
+        player_dict['score'] = scores[player.player_num]
         player_dict_list.append(player_dict)
     render_context['players'] = player_dict_list
     

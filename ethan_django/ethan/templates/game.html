@@ -10,15 +10,24 @@
         <p>
         <h1>DICE: [{{die1}}] [{{die2}}]</h1>
         <p>
+        {% if not end_msg %}
+        <h2>player {{player_turn}} rolls next.</h2>
+        {% endif %}
         <form method="POST">
             {% for x in players %} 
-            <b>{{x.num}}: </b>
-            <input name=player{{x.num}} placeholder="{{x.name}}" />
+            <b>Player #{{x.num}}: </b>
+            <input id=player{{x.num}} name=player{{x.num}} value="{{x.name}}" {% if end_msg %}disabled{% endif %} />
+            <b> SCORE - {{x.score}} </b>
             <p> 
             {% endfor %}
-            <input type="submit" value="Roll the dice!" />
+            <input type="submit" value="Roll the dice!" {% if end_msg %}disabled{% endif %} />
             {% csrf_token %}
         </form>
+        {% if end_msg %}
+        <form method="GET" action="/">
+            <input type="submit" value="start a new game?" />
+        </form>
+        {% endif %}
         <p>
         {% for x in turns %}
         {{x}} <br> 
