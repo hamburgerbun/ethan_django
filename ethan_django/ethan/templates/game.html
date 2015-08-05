@@ -4,11 +4,11 @@
     </head>
     <body>
         {% if end_msg %}
-        <h1>{{end_msg}}</h1>
+        <h1><div id="end_msg">{{end_msg}}</div></h1>
         {% endif %}
-        <h1>ETHAN: {{ethan_count}} chips</h1>
+        <h1>ETHAN: <div style="display: inline-block;" id="ethan_count">{{ethan_count}}</div> chips</h1>
         <p>
-        <h1>DICE: [{{die1}}] [{{die2}}]</h1>
+        <h1>DICE: [<div style="display: inline-block;" id="die1">{{die1}}</div>] [<div style="display: inline-block;" id="die2">{{die2}}</div>]</h1>
         <p>
         {% if not end_msg %}
         <h2>player {{player_turn}} rolls next.</h2>
@@ -17,9 +17,10 @@
             {% for x in players %} 
             <b>Player #{{x.num}}: </b>
             <input id=player{{x.num}} name=player{{x.num}} value="{{x.name}}" {% if end_msg %}disabled{% endif %} />
-            <b> SCORE - {{x.score}} </b>
-            <p> 
+            <b> SCORE - <div style="display: inline-block;" id="score{{x.num}}">{{x.score}}</div></b>
+            <br> 
             {% endfor %}
+            <p>
             <input type="submit" value="Roll the dice!" {% if end_msg %}disabled{% endif %} />
             {% csrf_token %}
         </form>
@@ -29,8 +30,10 @@
         </form>
         {% endif %}
         <p>
+        <div id="turn_text">
         {% for x in turns %}
         {{x}} <br> 
         {% endfor %}
+        </div>
     </body>
 </html>
