@@ -12,6 +12,9 @@
         <input name="num_players" id="num_players" placeholder="Number of players (ex. 5)" /> <br>
         Ethan eyes? <br>
         <input name="ethan_eyes_chk" type="checkbox" id="ethan_eyes_chk" /><br>
+        What UI type are we demoing today?<br>
+        <input name="ui_type" type="radio" id="ui_type" value="html">HTML only (turns and state are saved with each turn)<br>
+        <input name="ui_type" type="radio" id="ui_type" value="js">All javascript (no saved states, game runs entirely in browser)<br>
         <input type="submit" value="Play Ethan!" />
         {% csrf_token %}
         </form>
