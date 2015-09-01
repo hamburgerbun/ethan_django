@@ -13,7 +13,9 @@
         {% if not end_msg %}
         <h2>player {{player_turn}} rolls next.</h2>
         {% endif %}
+        {% if ui_type != "js" %}
         <form method="POST">
+        {% endif %}
             {% for x in players %} 
             <b>Player #{{x.num}}: </b>
             <input id=player{{x.num}} name=player{{x.num}} value="{{x.name}}" {% if end_msg %}disabled{% endif %} />
@@ -21,9 +23,11 @@
             <br> 
             {% endfor %}
             <p>
-            <input type="submit" value="Roll the dice!" {% if end_msg %}disabled{% endif %} />
+            <input type="submit" id="submit_button" value="Roll the dice!" {% if end_msg %}disabled{% endif %} {% if ui_type == "js" %}onclick="do_a_turn();"{% endif %} />
             {% csrf_token %}
+        {% if ui_type != "js" %}
         </form>
+        {% endif %}
         {% if end_msg %}
         <form method="GET" action="/">
             <input type="submit" value="start a new game?" />
@@ -37,3 +41,83 @@
         </div>
     </body>
 </html>
+{% if ui_type == "js" %}
+<script>
+var turn_num = -1;
+var player_turn = 0
+// get player count by looping through score# divs
+var test_elem = document.getElementById("score0");
+var player_count = 0;
+var ethan_eyes = {% if ethan_eyes %}1{% else %}0{% endif %};
+while (test_elem) {
+    player_count = player_count + 1;
+    test_elem = document.getElementById("score" + player_count);
+}
+// function to do turns
+function do_a_turn() {
+    // roll both dice
+    var die1 = Math.floor(Math.random() * 6) + 1;
+    var die2 = Math.floor(Math.random() * 6) + 1;
+    var total = die1 + die2;
+    // form turn string
+    var current_player = "player"+player_turn;
+    var current_score = parseInt(document.getElementById("score"+player_turn).innerHTML); 
+    var ethan_count = parseInt(document.getElementById("ethan_count").innerHTML);
+    var player_name = document.getElementById(current_player).value;
+    if (player_name === "") {
+        player_name = current_player;
+    }
+    var turn_str = player_name + " rolled a " + total + ", ";
+    if (total === 4) {
+        // player get ethan's chips
+        current_score = current_score + ethan_count;
+        ethan_count = 0;
+        turn_str = turn_str + player_name + " robs Ethan of " + ethan_count + " chips.";
+    } else if ((total === 2) && ethan_eyes) {
+        // player loses instantly
+        ethan_count = current_score + ethan_count;
+        current_score = 0;
+        turn_str = turn_str + player_name + " gets Ethan Eyes and loses all chips.";
+    } else {
+        // player loses a chip
+        current_score = current_score - 1;
+        ethan_count = ethan_count + 1;
+        turn_str = turn_str + player_name + " loses 1 chips.";
+    }
+    // update chip counts
+    document.getElementById("score"+player_turn).innerHTML = String(current_score);
+    document.getElementById("ethan_count").innerHTML = String(ethan_count);
+    // add turn string to history
+    document.getElementById("turn_text").innerHTML = turn_str + "<br>" + document.getElementById("turn_text").innerHTML;
+    // check win lose conditions
+    var score_sum = 0;
+    for (var i = 0; i < player_count; i++) {
+        score_sum = score_sum + parseInt(document.getElementById("score"+i).innerHTML);
+    }
+    if (score_sum < 1) {
+        // lose condition
+        document.getElementById("submit_button").disabled = true;
+        document.body.innerHTML = "<h1>EVERYBODY LOSES. AE2015.</h1>" + document.body.innerHTML;
+    } else if ((current_score > ethan_count) && (current_score === score_sum)) {
+        // current player won
+        document.getElementById("submit_button").disabled = true;
+        document.body.innerHTML = "<h1>HOORAY, " + player_name + " WON, ETHAN LOSES.<h1>" + document.body.innerHTML;
+    } else {
+        while (1) {
+            player_turn = (player_turn + 1) % player_count;
+            var check_score = parseInt(document.getElementById("score"+player_turn).innerHTML);
+            if (check_score > 0) {
+                break;
+            }
+        }
+    }
+    //increment turns
+    turn_num = turn_num + 1;
+}
+
+</script>
+{% endif %}
+{% if ui_type == "ajax" %}
+<script>
+</script>
+{% endif %}

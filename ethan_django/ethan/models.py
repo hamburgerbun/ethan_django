@@ -12,6 +12,7 @@ class Game(models.Model):
     die1 = models.IntegerField()
     die2 = models.IntegerField()
     created = models.DateTimeField() #date created
+    ui_type = models.CharField(max_length=10) #UI i am demoing
 
 class Player(models.Model):
     game_id = models.CharField(max_length=32)

@@ -22,6 +22,10 @@ def _validate_options(post_dict):
     ret_dict = dict()
     if 'ethan_eyes_chk' in post_dict:
         ret_dict['ethan_eyes'] = 1
+    if 'ui_type' in post_dict:
+        ret_dict['ui_type'] = post_dict['ui_type']
+    else:
+        ret_dict['ui_type'] = 'html'
     try:
         ret_dict['player_count'] = int(post_dict['num_players'])
     except:
@@ -53,7 +57,8 @@ def _create_game(ret_dict):
                     last_updated = datetime.now(), \
                     die1 = 2, \
                     die2 = 2, \
-                    created = datetime.now())
+                    created = datetime.now(), 
+                    ui_type = ret_dict['ui_type'])
     game_obj.save()
     return game_obj.game_id
 
@@ -149,5 +154,8 @@ def _form_render_context(game_id):
     elif game.win_lose_ind > 0:
         winner_name = players[game.win_lose_ind].player_name
         render_context['end_msg'] = 'HOORAY %s WON, ETHAN LOSES.' % (winner_name)
+    render_context['ui_type'] = game.ui_type
+    if game.ethan_eyes:
+        render_context['ethan_eyes'] = game.ethan_eyes;
     return render_context
 
